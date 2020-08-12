@@ -22,7 +22,6 @@ def collection_and_analysis(f_name, is_analytic):
         result.extend(analysis.get_analytics())
     with open('result.txt', 'wt', encoding='utf-8') as f:
         f.write('\n'.join(s for s in result))
-    print('Программа завершена')
 
 
 if __name__ == '__main__':
@@ -31,4 +30,3 @@ if __name__ == '__main__':
     parser.add_argument('--analytics', action='store_true', help='Is do analysis')
     args = parser.parse_args()
     collection_and_analysis(args.file, args.analytics)
-    # collection_and_analysis('input.txt', True)
