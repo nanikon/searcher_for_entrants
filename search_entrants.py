@@ -3,9 +3,7 @@ from entrant_applications import EntrantApplications
 from analytics import Analytics
 
 
-def collection_and_analysis(f_name, is_analytic):
-    with open(f_name, 'rt', encoding='utf-8') as f:
-        data = list(map(lambda s: s.replace('\n', ''), f.readlines()))
+def collection_and_analysis(data, is_analytic):
     entrants = []
     for fio in data:
         entrant = EntrantApplications(fio)
@@ -20,8 +18,7 @@ def collection_and_analysis(f_name, is_analytic):
     if is_analytic:
         analysis = Analytics(entrants)
         result.extend(analysis.get_analytics())
-    with open('result.txt', 'wt', encoding='utf-8') as f:
-        f.write('\n'.join(s for s in result))
+    return result
 
 
 if __name__ == '__main__':
@@ -29,4 +26,8 @@ if __name__ == '__main__':
     parser.add_argument('file', type=str, help='Input file for FIO applicants')
     parser.add_argument('--analytics', action='store_true', help='Is do analysis')
     args = parser.parse_args()
-    collection_and_analysis(args.file, args.analytics)
+    with open(args.file, 'rt', encoding='utf-8') as f:
+        data = list(map(lambda s: s.replace('\n', ''), f.readlines()))
+    result = collection_and_analysis(data, args.analytics)
+    with open('result.txt', 'wt', encoding='utf-8') as f:
+        f.write('\n'.join(s for s in result))
