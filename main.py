@@ -1,6 +1,4 @@
-import os
 from flask import Flask, render_template, request
-from werkzeug.utils import secure_filename
 
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, TextAreaField, FileField, BooleanField
@@ -34,11 +32,7 @@ def index():
         elif form.file_entrants.data:
             file = request.files['file_entrants']
             if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(filename)
-                with open(filename, 'rt', encoding='utf-8') as f:
-                    data = list(map(lambda s: s.replace('\n', ''), f.readlines()))
-                os.remove(filename)
+                data = file.read().decode('utf-8').split('\r\n')
                 result = collection_and_analysis(data, form.is_analysis.data)
             else:
                 result = ['Файл не найден или у него неправильное расширение']
