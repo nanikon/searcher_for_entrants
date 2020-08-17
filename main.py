@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
 
@@ -12,9 +13,13 @@ app.config['SECRET_KEY'] = 'it_is_my_very_big-big_secret_my_dear'
 
 class EntrantsForm(FlaskForm):
     list_entrants = TextAreaField('Введите ФИО абитурентов, каждого с новой строки')
-    file_entrants = FileField('Загрузите файл с ФИО абитуриентов')
+    file_entrants = FileField('Загрузите файл .txt с ФИО абитуриентов')
     is_analysis = BooleanField('Добавить аналитику')
     submit = SubmitField('Поиск')
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1] == 'txt'
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -27,8 +32,16 @@ def index():
             data = form.list_entrants.data.split('\r\n')
             result = collection_and_analysis(data, form.is_analysis.data)
         elif form.file_entrants.data:
-            data = request.FILES[form.image.name].readlines()
-            result = collection_and_analysis(data, form.is_analysis.data)
+            file = request.files['file_entrants']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(filename)
+                with open(filename, 'rt', encoding='utf-8') as f:
+                    data = list(map(lambda s: s.replace('\n', ''), f.readlines()))
+                os.remove(filename)
+                result = collection_and_analysis(data, form.is_analysis.data)
+            else:
+                result = ['Файл не найден или у него неправильное расширение']
         else:
             result = ['Вы ничего не ввели']
     return render_template('index.html', form=form, result=result)
